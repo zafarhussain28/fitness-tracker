@@ -573,7 +573,7 @@ def set_bg(image_path):
 # ----------------------------------------------------
 def main():
     inject_custom_css()
-    set_bg(r"C:\Users\hiuna\Downloads\background.jpg") 
+    set_bg("assets/background.jpg") 
 
     # --- SIDEBAR NAVIGATION ---
     with st.sidebar:
@@ -636,7 +636,7 @@ def main():
                 return base64.b64encode(data).decode()
 
             # UPDATE THIS PATH to your new dark theme image if necessary
-            img_path = r"C:\Users\hiuna\Downloads\logo.jpg"
+            img_path =  "assets/logo.jpg"
             
             try:
                 img_base64 = get_img_as_base64(img_path)
@@ -916,4 +916,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()
