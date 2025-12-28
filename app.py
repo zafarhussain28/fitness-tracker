@@ -15,7 +15,7 @@ from google.api_core.exceptions import GoogleAPIError
 
 
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-1.0-pro")
+model = genai.GenerativeModel("gemini-pro")
 
 # ----------------------------------------------------
 # MediaPipe initializations (UNCHANGED)
@@ -912,6 +912,7 @@ def main():
 if __name__ == "__main__":
 
     main()
+
 
 
 
