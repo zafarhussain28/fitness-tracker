@@ -701,12 +701,14 @@ def main():
                 with col_v1:
                     st.markdown("<h2 class='section-title'>📸 SCAN INPUT</h2>", unsafe_allow_html=True)
 
-                    st.image(pil_image, use_container_width=True)
+                    st.image(pil_image, width=600)
+
                 with col_v2:
                     st.markdown("<h2 class='section-title'>🧬 SEGMENTATION MAP</h2>", unsafe_allow_html=True)
 
                     annotated_rgb = cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB)
-                    st.image(annotated_rgb, use_container_width=True)
+                    st.image(annotated_rgb, width=600)
+
 
                 
                 # Regional Breakdown - EXACTLY like 77.png
@@ -910,6 +912,7 @@ def main():
 if __name__ == "__main__":
 
     main()
+
 
 
 
