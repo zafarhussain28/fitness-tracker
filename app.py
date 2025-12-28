@@ -10,8 +10,11 @@ from datetime import datetime
 import requests
 import os
 import json
-from google import genai
-from google.genai.errors import APIError
+import google.generativeai as genai
+from google.api_core.exceptions import GoogleAPIError
+
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 # ----------------------------------------------------
 # MediaPipe initializations (UNCHANGED)
@@ -253,15 +256,7 @@ def get_ai_recommendations(analysis: Dict, body_measurements: BodyMeasurements) 
             "lifestyle": []
         }
 
-    try:
-        client = genai.Client()
-    except Exception as e:
-        return {
-            "priority_areas": [],
-            "diet": [f"❌ Gemini Client Initialization Error: {str(e)}"],
-            "exercise": [],
-            "lifestyle": []
-        }
+   
 
     prompt = f"""
 You are an expert fitness coach and nutrition specialist.
@@ -291,23 +286,31 @@ Generate the JSON object based ONLY on the data and the format above.
 """
 
     try:
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config={
-                "response_mime_type": "application/json",
-                "response_schema": {
-                    "type": "object",
-                    "properties": {
-                        "priority_areas": {"type": "array", "items": {"type": "string"}},
-                        "diet": {"type": "array", "items": {"type": "string"}},
-                        "exercise": {"type": "array", "items": {"type": "string"}},
-                        "lifestyle": {"type": "array", "items": {"type": "string"}},
-                    },
-                },
-            },
-        )
-        return json.loads(response.text)
+    response = model.generate_content(prompt)
+    return json.loads(response.text)
+
+except GoogleAPIError as e:
+    return {
+        "priority_areas": [],
+        "diet": [f"❌ Gemini API Error: {str(e)}"],
+        "exercise": [],
+        "lifestyle": []
+    }
+except json.JSONDecodeError:
+    return {
+        "priority_areas": [],
+        "diet": ["❌ Gemini returned invalid JSON."],
+        "exercise": [],
+        "lifestyle": []
+    }
+except Exception as e:
+    return {
+        "priority_areas": [],
+        "diet": [f"❌ Unexpected Error: {str(e)}"],
+        "exercise": [],
+        "lifestyle": []
+    }
+
 
     except APIError as e:
         return {
@@ -918,3 +921,4 @@ def main():
 if __name__ == "__main__":
 
     main()
+
