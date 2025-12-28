@@ -246,25 +246,28 @@ def get_ideal_ranges(region_name: str, gender: str) -> Tuple[float, float]:
 
 def get_ai_recommendations(analysis: Dict, body_measurements: BodyMeasurements) -> Dict:
     """
-    Sends BMI + segmentation data to Gemini API (gemini-2.5-flash)
+    Sends BMI + segmentation data to Gemini API (gemini-1.5-flash)
     and returns diet, exercise, lifestyle recommendations.
     """
+
     if not os.getenv("GEMINI_API_KEY"):
         return {
             "priority_areas": [],
-            "diet": ["❌ *GEMINI SETUP ERROR:* API Key not found. Please set the 'GEMINI_API_KEY' environment variable."],
+            "diet": ["❌ GEMINI SETUP ERROR: API Key not found."],
             "exercise": [],
             "lifestyle": []
         }
 
-   
-
     prompt = f"""
 You are an expert fitness coach and nutrition specialist.
 Analyze the provided user data and regional fat accumulation scores.
-CRITICAL INSTRUCTION: Respond with STRICT JSON object ONLY. NO extra text, conversation, or markdown fences.
 
-### DATA ###
+CRITICAL:
+- Respond with STRICT JSON ONLY
+- No markdown
+- No explanation text
+
+### USER DATA ###
 Age: {body_measurements.age}
 Gender: {body_measurements.gender}
 Height: {body_measurements.height_cm} cm
@@ -272,7 +275,7 @@ Weight: {body_measurements.weight_kg} kg
 BMI: {body_measurements.bmi} ({body_measurements.bmi_category})
 Overall Fat Score: {analysis.get('overall_score', 0)}
 
-### REGIONAL FAT ACCUMULATION SCORES (0.0=Lean, 1.0=High Fat) ###
+### REGIONAL FAT SCORES ###
 {json.dumps(analysis.get('regions', {}), indent=2)}
 
 ### REQUIRED JSON FORMAT ###
@@ -282,51 +285,36 @@ Overall Fat Score: {analysis.get('overall_score', 0)}
   "exercise": [],
   "lifestyle": []
 }}
-
-Generate the JSON object based ONLY on the data and the format above.
 """
 
     try:
-    response = model.generate_content(prompt)
-    return json.loads(response.text)
+        response = model.generate_content(prompt)
+        return json.loads(response.text)
 
-except GoogleAPIError as e:
-    return {
-        "priority_areas": [],
-        "diet": [f"❌ Gemini API Error: {str(e)}"],
-        "exercise": [],
-        "lifestyle": []
-    }
-except json.JSONDecodeError:
-    return {
-        "priority_areas": [],
-        "diet": ["❌ Gemini returned invalid JSON."],
-        "exercise": [],
-        "lifestyle": []
-    }
-except Exception as e:
-    return {
-        "priority_areas": [],
-        "diet": [f"❌ Unexpected Error: {str(e)}"],
-        "exercise": [],
-        "lifestyle": []
-    }
-
-
-    except APIError as e:
+    except GoogleAPIError as e:
         return {
             "priority_areas": [],
-            "diet": [f"❌ Gemini API Call Failed: Status {e.status_code} - {e.message}"],
+            "diet": [f"❌ Gemini API Error: {str(e)}"],
             "exercise": [],
             "lifestyle": []
         }
+
+    except json.JSONDecodeError:
+        return {
+            "priority_areas": [],
+            "diet": ["❌ Gemini returned invalid JSON."],
+            "exercise": [],
+            "lifestyle": []
+        }
+
     except Exception as e:
         return {
             "priority_areas": [],
-            "diet": [f"❌ Unknown Error during AI generation: {str(e)}"],
+            "diet": [f"❌ Unexpected Error: {str(e)}"],
             "exercise": [],
             "lifestyle": []
         }
+
 
 def preprocess_image(image_bgr: np.ndarray) -> np.ndarray:
     h, w = image_bgr.shape[:2]
@@ -922,5 +910,6 @@ def main():
 if __name__ == "__main__":
 
     main()
+
 
 
