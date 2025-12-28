@@ -13,6 +13,7 @@ import json
 import google.generativeai as genai
 from google.api_core.exceptions import GoogleAPIError
 
+
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 model = genai.GenerativeModel("gemini-1.5-flash")
 
@@ -921,4 +922,5 @@ def main():
 if __name__ == "__main__":
 
     main()
+
 
